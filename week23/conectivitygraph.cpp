@@ -35,8 +35,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <iostream>
+#include <map>
+#include <set>
 #include <vector>
 
+using std::map;
+using std::set;
 using std::vector;
 
 class UndirectedGraph {
@@ -52,7 +56,7 @@ class UndirectedGraph {
     float maxdistance, percentage;
     vector<vector<float>> data;
 
-    int find_min_dist(int, vector<float>, vector<std::pair<int, int>>);
+    int find_min_dist(int, map<int, float>&, set<std::pair<int, int>>&);
     bool prob();
     float rand_distance();
 };
@@ -80,7 +84,7 @@ UndirectedGraph::UndirectedGraph(int vertices,
             if (i == j) {  // self distance should be 0
                 data[i][j] = 0;
             } else if (prob()) {
-                int t = rand_distance();
+                float t = rand_distance();
                 data[i][j] = t;
                 data[j][i] = t;
             }
@@ -99,43 +103,72 @@ void UndirectedGraph::print() {
 }
 
 int UndirectedGraph::find_min_dist(int n,
-                                   vector<float> close,
-                                   vector<std::pair<int, int>> open) {
-    float next_dist = maxdistance + 1;
+                                   map<int, float>& close,
+                                   set<std::pair<int, int>>& open) {
+    float next_dist = maxdistance * size + 1;
+    std::pair<int, int> p;
     int idx;
-    for (size_t i = 0; i < open.size(); ++i) {
-        int start = open[i].first;
-        int end = open[i].second;
+    int k;
+    int i = 0;
+    for (auto e : open) {
+        int start = e.first;
+        int end = e.second;
+
         float d = close[start] + data[start][end];
+        // std::cout << "\b::::" << start << ":::" << end << ":::" << d << ";;"
+        //           << next_dist << ":\n";
         if (d < next_dist) {
             next_dist = d;
             idx = end;
+            p = e;
+            k = i;
         }
+        ++i;
     }
+    // std::cout << "?" << idx << ":" << p.first << ":" << p.second << ":" << i;
+    open.erase(p);
+    close[idx] = next_dist;
+    // std::cout << "openset size:" << open.size() << "||" << idx << "\n";
+    return idx;
 };
 
 // Get the distance between two vertices
 float UndirectedGraph::average_path_length() {
-    vector<float> closeset(size, -1);
-    vector<std::pair<int, int>> openset;
+    map<int, float> closeset;
+    set<std::pair<int, int>> openset;
 
     int c_node = 0;
     closeset[c_node] = 0;
 
     for (int j = 1; j < size; ++j) {
         if (data[c_node][j] != -1) {
-            openset.push_back(std::make_pair(c_node, j));
+            openset.insert(std::make_pair(c_node, j));
         }
     }
     while (openset.size() > 0) {
         // given current node & close set & open set
         // find the minimum & add to close set
         c_node = find_min_dist(c_node, closeset, openset);
-    }
-};
+        for (int j = 0; j < size; ++j) {
+            if (data[c_node][j] > 0 && closeset.find(j) == closeset.end()) {
+                openset.insert(std::make_pair(c_node, j));
+            }
+        }
+        // for (auto e : closeset) {
+        //     std::cout << e.first << " " << e.second << " ";
+        // }
+        // std::cout << "\n";
 
-// generate random true value based on the probability input when construct the
-// class. e.g: 0.1 means there will be 10% chance of get true
+        // for (auto e : openset) {
+        //     std::cout << e.first << " " << e.second << " |" << c_node <<
+        //     "\n";
+        // }
+    };
+    return 0;
+}
+
+// generate random true value based on the probability input when construct
+// the class. e.g: 0.1 means there will be 10% chance of get true
 bool UndirectedGraph::prob() {
     // randomly generate a float number from 0 to 1
     float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -145,14 +178,16 @@ bool UndirectedGraph::prob() {
 float UndirectedGraph::rand_distance() {
     // random generate a distance from 1 to maximum distance.
     float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-    if (r == 0.) {
+    if (r == 0) {
         return rand_distance();
-        // rerun random function if we get a 0 distance between different node
+        // rerun random function if we get a 0 distance between different
+        // node
     }
     return r * maxdistance;
 }
 
 int main() {
-    UndirectedGraph g = UndirectedGraph(50, 0.2, 1);
+    UndirectedGraph g = UndirectedGraph(5, 0.4, 1);
     g.print();
+    g.average_path_length();
 };
