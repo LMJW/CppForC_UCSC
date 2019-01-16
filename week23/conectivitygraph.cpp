@@ -151,7 +151,14 @@ float UndirectedGraph::average_path_length() {
             }
         }
     };
-    return 0;
+    float total = 0;
+    for (auto e : closeset) {
+        total += e.second;
+    }
+    if (closeset.size() < 2) {
+        return 0;
+    }
+    return total / (closeset.size() - 1);
 }
 
 // generate random true value based on the probability input when construct
@@ -172,7 +179,11 @@ float UndirectedGraph::rand_distance() {
 }
 
 int main() {
-    UndirectedGraph g = UndirectedGraph(5, 0.4, 1);
-    g.print();
-    g.average_path_length();
+    int n, d;
+    float f;
+    std::cin >> n >> f >> d;
+    // std::cout << n << " " << d << " " << f;
+    UndirectedGraph g = UndirectedGraph(n, f, d);
+    // g.print();
+    std::cout << "Average edge length is :" << g.average_path_length() << "\n";
 };
