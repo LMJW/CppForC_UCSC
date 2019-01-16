@@ -115,8 +115,6 @@ int UndirectedGraph::find_min_dist(int n,
         int end = e.second;
 
         float d = close[start] + data[start][end];
-        // std::cout << "\b::::" << start << ":::" << end << ":::" << d << ";;"
-        //           << next_dist << ":\n";
         if (d < next_dist) {
             next_dist = d;
             idx = end;
@@ -125,10 +123,8 @@ int UndirectedGraph::find_min_dist(int n,
         }
         ++i;
     }
-    // std::cout << "?" << idx << ":" << p.first << ":" << p.second << ":" << i;
     open.erase(p);
     close[idx] = next_dist;
-    // std::cout << "openset size:" << open.size() << "||" << idx << "\n";
     return idx;
 };
 
@@ -154,15 +150,6 @@ float UndirectedGraph::average_path_length() {
                 openset.insert(std::make_pair(c_node, j));
             }
         }
-        // for (auto e : closeset) {
-        //     std::cout << e.first << " " << e.second << " ";
-        // }
-        // std::cout << "\n";
-
-        // for (auto e : openset) {
-        //     std::cout << e.first << " " << e.second << " |" << c_node <<
-        //     "\n";
-        // }
     };
     return 0;
 }
@@ -180,8 +167,6 @@ float UndirectedGraph::rand_distance() {
     float r = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
     if (r == 0) {
         return rand_distance();
-        // rerun random function if we get a 0 distance between different
-        // node
     }
     return r * maxdistance;
 }
