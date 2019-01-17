@@ -45,7 +45,7 @@ using std::vector;
 
 class UndirectedGraph {
    public:
-    UndirectedGraph(int vertices, float percentage, int max_distance, int seed);
+    UndirectedGraph(int, float, int, int);
     ~UndirectedGraph() { release(); };
     void release(){};
     void print();
@@ -69,6 +69,7 @@ UndirectedGraph::UndirectedGraph(int vertices,
                                  int mdis = 50,
                                  int n = 0)
     : size(vertices), percentage(p), maxdistance(mdis), seed(n) {
+    // throw error if percentage is less than 0 or greater than 1
     if (percentage < 0) {
         std::string errorMsg =
             std::string("percentage must not be negative number.\n");
@@ -105,11 +106,9 @@ void UndirectedGraph::print() {
 int UndirectedGraph::find_min_dist(int n,
                                    map<int, float>& close,
                                    set<std::pair<int, int>>& open) {
-    float next_dist = maxdistance * size + 1;
+    float next_dist = maxdistance * size + 1;  // initial the distance to be max
     std::pair<int, int> p;
-    int idx;
-    int k;
-    int i = 0;
+    int idx;  // index of the end node
     for (auto e : open) {
         int start = e.first;
         int end = e.second;
@@ -117,12 +116,11 @@ int UndirectedGraph::find_min_dist(int n,
         float d = close[start] + data[start][end];
         if (d < next_dist) {
             next_dist = d;
-            idx = end;
+            // idx = end;
             p = e;
-            k = i;
         }
-        ++i;
     }
+    idx = p.second;
     open.erase(p);
     close[idx] = next_dist;
     return idx;
@@ -155,9 +153,11 @@ float UndirectedGraph::average_path_length() {
     for (auto e : closeset) {
         total += e.second;
     }
-    if (closeset.size() < 2) {
+    if (closeset.size() < 2) {  // no node is connected to node 0
         return 0;
     }
+    // In closeset, we store the distance from node 0 to node 0, in order to
+    // calculate the average distance, we need to reduce closeset.size by 1
     return total / (closeset.size() - 1);
 }
 
@@ -178,12 +178,36 @@ float UndirectedGraph::rand_distance() {
     return r * maxdistance;
 }
 
+/**
+ * What I've learned.
+ *
+ * I have learned that chooing a correct data structure can be essentially
+ * important in solving the problem. For example, I was trying to use vector to
+ * store the open and close set, but it turns out they are not good enough for
+ * this purpose, as we need to insert and delete a node very often(as in
+ * openset). Such operations on an vector is not efficient and can be hard to
+ * write.
+ *
+ * I was thinking to use unordered_map and unordered_set to store both openset
+ * and closeset. But I need to define custome hash function to be able to use it
+ * as I am using std::pair to store start and end node. So I eventually choosed
+ * std::set and std::map which has slight slow performance in search O(logN) but
+ * relative easy to implement and relative fast in inserting and deleting nodes.
+ */
+
 int main() {
-    int n, d;
-    float f;
-    std::cin >> n >> f >> d;
-    // std::cout << n << " " << d << " " << f;
-    UndirectedGraph g = UndirectedGraph(n, f, d);
-    // g.print();
-    std::cout << "Average edge length is :" << g.average_path_length() << "\n";
+    // int n, d;
+    // float f;
+    // std::cin >> n >> f >> d;
+    // UndirectedGraph g = UndirectedGraph(n, f, d);
+    for (int i = 1; i < 11; ++i) {
+        UndirectedGraph g = UndirectedGraph(50, 0.2, i);
+        std::cout << "Average edge length for graph with 50 nodes, 20% prob of "
+                     "having an edge and maximum distance of "
+                  << i << " is: " << g.average_path_length() << "\n";
+        g = UndirectedGraph(50, 0.4, i);
+        std::cout << "Average edge length for graph with 50 nodes, 40% prob of "
+                     "having an edge and maximum distance of "
+                  << i << " is: " << g.average_path_length() << "\n";
+    }
 };
