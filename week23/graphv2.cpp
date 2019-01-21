@@ -12,7 +12,10 @@ public:
     /// @pram n_e number of edges
     /// @pram adj_ 1-D array to represent the adjcent matrix
     Graph(unsigned int v) : n_v(v), n_e(0), adj_(v * v, 0) {}
-    int vertices();
+
+    /// @return number of vertices in graph
+    unsigned int V() const { return n_v; }
+
     int edges();
     bool adjacent(node, node);
     vector<node> neighbours(node, node);
