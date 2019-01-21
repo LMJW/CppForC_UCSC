@@ -20,7 +20,14 @@ public:
     unsigned int E() const { return n_e; }
 
     /// @return true if two vertices are linked by an edge
-    bool adjacent(int v1, int v2) const { return adj_[v1 + n_v * v2] > 0; }
+    bool adjacent(unsigned int x, unsigned int y) const {
+        return adj_[index(x, y)] > 0;
+    }
+
+    /// @return the index of 1-d vector given two verices in adjcent matrix
+    unsigned int index(unsigned int x, unsigned int y) const {
+        return x + n_v * y;
+    }
 
     vector<node> neighbours(node, node);
     bool connect(node, node, D);
