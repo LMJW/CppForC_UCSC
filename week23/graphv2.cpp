@@ -20,12 +20,17 @@ public:
     /// @return number of edges in graph
     unsigned int E() const { return n_e; }
 
+    /// check whether two vertices has an edge
+    /// @pram x, y vertice index
     /// @return true if two vertices are linked by an edge
     bool adjacent(unsigned int x, unsigned int y) const {
         return adj_[index_for(x, y)] > 0;
     }
+
+    /// find all its neighbor vertices of the given vertice
+    /// @pram vertice given vertice index
     /// @return a vector of vertices that are the neighbors of given vertices
-    vector<unsigned int> neighbours(int vertice) const {
+    vector<unsigned int> neighbours(unsigned int vertice) const {
         vector<unsigned int> result;
         for (int i = 0; i < n_v; ++i) {
             if (adjacent(vertice, i)) {
@@ -35,7 +40,14 @@ public:
         return result;
     }
 
-    bool connect(node, node, D);
+    /// set the edge length between two nodes
+    /// @pram v1, v2 indexes of two vertices
+    /// @pram distance the edge length
+    void set_edge(unsigned int v1, unsigned int v2, double distance) {
+        adj_[index_for(v1, v2)] = distance;
+        adj_[index_for(v2, v1)] = distance;
+    }
+
     bool disconnect(node, node);
     D get_node_value(node);
     bool set_node_value(node, D);
