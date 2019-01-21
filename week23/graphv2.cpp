@@ -5,8 +5,13 @@ using namespace std;
 
 class Graph {
 public:
-    /// init
-    Graph(){};
+    /// initialize graph with number of vertices
+    /// using adjacent matrix to store graph
+    ///
+    /// @pram n_v number of vertices
+    /// @pram n_e number of edges
+    /// @pram adj_ 1-D array to represent the adjcent matrix
+    Graph(unsigned int v) : n_v(v), n_e(0), adj_(v * v, 0) {}
     int vertices();
     int edges();
     bool adjacent(node, node);
@@ -17,6 +22,11 @@ public:
     bool set_node_value(node, D);
     D get_edge_value(node, node);
     bool set_edge_value(node, node, D);
+
+private:
+    const unsigned int n_v;
+    unsigned int n_e;
+    vector<double> adj_;
 };
 
 template <class node>
