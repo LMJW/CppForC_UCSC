@@ -46,7 +46,10 @@ using std::vector;
 class UndirectedGraph {
    public:
     UndirectedGraph(int, float, int, int);
-    ~UndirectedGraph() { release(); };
+    ~UndirectedGraph(){
+        /** as vector is used for internal storage, No memory release need to be
+           done.*/
+    };
     void release(){};
     void print();
     float average_path_length();
