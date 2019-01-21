@@ -24,8 +24,17 @@ public:
     bool adjacent(unsigned int x, unsigned int y) const {
         return adj_[index_for(x, y)] > 0;
     }
+    /// @return a vector of vertices that are the neighbors of given vertices
+    vector<int> neighbours(int vertice) const {
+        vector<int> nb;
+        for (int i = 0; i < n_v; ++i) {
+            if (adj_[index_for(vertice, i)] > 0) {
+                nb.push_back(i);
+            }
+        }
+        return nb;
+    }
 
-    vector<node> neighbours(node, node);
     bool connect(node, node, D);
     bool disconnect(node, node);
     D get_node_value(node);
