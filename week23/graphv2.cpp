@@ -52,11 +52,14 @@ public:
         adj_[index_for(v2, v1)] = distance;
     }
 
-    bool disconnect(node, node);
-    D get_node_value(node);
-    bool set_node_value(node, D);
-    D get_edge_value(node, node);
-    bool set_edge_value(node, node, D);
+    /// Remove edge
+    /// @parm v1,v2 indexes of vertices
+    void remove_edge(unsigned int v1, unsigned int v2) {
+        adj_[index_for(v1, v2)] = 0;
+        adj_[index_for(v2, v1)] = 0;
+    }
+
+    double get_edge_value(unsigned int v1, unsigned int v2) const {}
 
 protected:
     /// @return the index of 1-d vector given two verices in adjcent matrix
