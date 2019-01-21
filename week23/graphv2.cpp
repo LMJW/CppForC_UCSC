@@ -16,8 +16,12 @@ public:
     /// @return number of vertices in graph
     unsigned int V() const { return n_v; }
 
-    int edges();
-    bool adjacent(node, node);
+    /// @return number of edges in graph
+    unsigned int E() const { return n_e; }
+
+    /// @return true if two vertices are linked by an edge
+    bool adjacent(int v1, int v2) const { return adj_[v1 + n_v * v2] > 0; }
+
     vector<node> neighbours(node, node);
     bool connect(node, node, D);
     bool disconnect(node, node);
