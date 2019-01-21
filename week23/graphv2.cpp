@@ -25,14 +25,14 @@ public:
         return adj_[index_for(x, y)] > 0;
     }
     /// @return a vector of vertices that are the neighbors of given vertices
-    vector<int> neighbours(int vertice) const {
-        vector<int> nb;
+    vector<unsigned int> neighbours(int vertice) const {
+        vector<unsigned int> result;
         for (int i = 0; i < n_v; ++i) {
-            if (adj_[index_for(vertice, i)] > 0) {
-                nb.push_back(i);
+            if (adjacent(vertice, i)) {
+                result.push_back(i);
             }
         }
-        return nb;
+        return result;
     }
 
     bool connect(node, node, D);
