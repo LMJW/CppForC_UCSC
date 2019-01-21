@@ -44,6 +44,10 @@ public:
     /// @pram v1, v2 indexes of two vertices
     /// @pram distance the edge length
     void set_edge(unsigned int v1, unsigned int v2, double distance) {
+        if (distance < 0) {
+            throw invalid_argument("The edge length cannot be negative!");
+        }
+
         adj_[index_for(v1, v2)] = distance;
         adj_[index_for(v2, v1)] = distance;
     }
