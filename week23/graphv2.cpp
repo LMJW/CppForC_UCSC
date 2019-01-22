@@ -59,7 +59,12 @@ public:
         adj_[index_for(v2, v1)] = 0;
     }
 
-    double get_edge_value(unsigned int v1, unsigned int v2) const {}
+    /// Get the edge length between two vertices
+    /// @pram v1,v2 vertices
+    /// @return length of edge
+    double get_edge_value(unsigned int v1, unsigned int v2) const {
+        return adj_[index_for(v1, v2)];
+    }
 
 protected:
     /// @return the index of 1-d vector given two verices in adjcent matrix
@@ -77,21 +82,30 @@ private:
     vector<double> adj_;
 };
 
-template <class node>
-class PriorityQueue {
-public:
-    void chgPriority(node);
-    node minPriority();
-    bool contains(node);
-    bool insert(node);
-    node top();
-    int size();
-};
+/// we can use the priority queue module provided by standard library
+/// In this case, we will just use the standard library
 
-template <class node, class D>
 class ShortestPath {
 public:
-    vector<node> listVertices();
-    vector<node> path(node, node);
-    D path_size(node, node);
+    /// ShortestPath takes an graph object and calculate the shortest distance
+    /// from starting node to all other nodes
+    ///
+    /// @pram g Graph object
+    /// @pram start unsigned int as starting vertices
+    ShortestPath(Graph& g, unsigned int start)
+        : g_(g), distances(g.V()), startnode(start) {
+        compute();
+    }
+
+    /// @pram t the target node
+    /// @return the distance from source node to target node
+    double operator[](unsigned int t) { return distances[t] }
+
+protected:
+    void compute() {}
+
+private:
+    Graph g_;
+    vector<double> distances;
+    unsigned int startnode;
 };
