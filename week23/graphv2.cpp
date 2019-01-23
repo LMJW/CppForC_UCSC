@@ -1,5 +1,7 @@
 #include <exception>
 #include <iostream>
+#include <queue>
+#include <tuple>
 #include <vector>
 
 using namespace std;
@@ -99,13 +101,34 @@ public:
 
     /// @pram t the target node
     /// @return the distance from source node to target node
-    double operator[](unsigned int t) { return distances[t] }
+    double operator[](unsigned int t) { return distances[t]; }
 
 protected:
-    void compute() {}
+    void compute() {
+        priority_queue<NodeDist> openset;
+        openset.push(make_tuple(startnode, 0));
+        while (!openset.empty()) {
+            auto p = openset.top();
+            unsigned int v = get<0>(p);
+            double d = get<1>(p);
+            openset.pop();
+            if (distances[v] > d) {
+                distances[v] = d;
+            }
+            auto neis = g_.neighbours(v);
+        }
+    }
 
 private:
     Graph g_;
     vector<double> distances;
     unsigned int startnode;
+
+    using NodeDist = tuple<unsigned int, double>;
+};
+
+struct NodeDist {
+    unsigned int ver;
+    double dis;
+    bool operator<(const NodeDist& n2) { return dis < n2.dis; };
 };
