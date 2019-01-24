@@ -52,7 +52,7 @@ public:
     /// @return a vector of vertices that are the neighbors of given vertices
     vector<unsigned int> neighbours(unsigned int vertice) const {
         vector<unsigned int> result;
-        for (int i = 0; i < n_v; ++i) {
+        for (unsigned int i = 0; i < n_v; ++i) {
             if (adjacent(vertice, i)) {
                 result.push_back(i);
             }
@@ -124,25 +124,28 @@ public:
 
 protected:
     void compute() {
+        // create a priority queue to store neighbors
         priority_queue<NodeDist, vector<NodeDist>,
                        less<vector<NodeDist>::value_type> >
             openset;
         openset.push(NodeDist(startnode, 0));
         while (!openset.empty()) {
-            auto p = openset.top();
+            unsigned int v;
+            double d;
 
+            auto p = openset.top();
+            v = p.ver;
+            d = p.dis;
             openset.pop();
 
-            if (dist_[p.ver] > p.dis) {
-                dist_[p.ver] = p.dis;
+            if (dist_[v] > d) {
+                dist_[v] = d;
             }
-            // cout << p.ver << " " << p.dis << " \n";
-            vector<unsigned int> neis = g_.neighbours(p.ver);
 
-            for (size_t i = 0; i < neis.size(); ++i) {
-                double t = dist_[p.ver] + g_.get_edge_value(p.ver, neis[i]);
-                if (dist_[neis[i]] > t) {
-                    openset.push(NodeDist(neis[i], t));
+            for (auto& w : g_.neighbours(v)) {
+                double t = dist_[v] + g_.get_edge_value(v, w);
+                if (dist_[w] > t) {
+                    openset.push(NodeDist(w, t));
                 }
             }
         }
