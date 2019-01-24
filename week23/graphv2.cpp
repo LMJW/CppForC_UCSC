@@ -1,10 +1,28 @@
 #include <exception>
 #include <iostream>
+#include <limits>
 #include <queue>
 #include <tuple>
 #include <vector>
 
 using namespace std;
+
+const double MAX_DIST = numeric_limits<double>::max();
+
+struct NodeDist {
+    unsigned int ver;
+    double dis;
+    NodeDist(unsigned int v, double d) : ver(v), dis(d) {}
+    ~NodeDist() {}
+    // Operator overload for less than
+    friend bool operator<(const NodeDist& n1, const NodeDist& n2) {
+        return n1.dis < n2.dis;
+    }
+    // Operator overload for greater than
+    friend bool operator>(const NodeDist& n1, const NodeDist& n2) {
+        return n2 < n1;
+    }
+};
 
 class Graph {
 public:
@@ -95,40 +113,45 @@ public:
     /// @pram g Graph object
     /// @pram start unsigned int as starting vertices
     ShortestPath(Graph& g, unsigned int start)
-        : g_(g), distances(g.V()), startnode(start) {
+        : g_(g), dist_(g.V(), MAX_DIST), startnode(start) {
         compute();
     }
 
     /// @pram t the target node
     /// @return the distance from source node to target node
-    double operator[](unsigned int t) { return distances[t]; }
+    double operator[](unsigned int t) { return dist_[t]; }
+    ~ShortestPath() {}
 
 protected:
     void compute() {
-        priority_queue<NodeDist> openset;
-        openset.push(make_tuple(startnode, 0));
+        priority_queue<NodeDist, vector<NodeDist>,
+                       less<vector<NodeDist>::value_type> >
+            openset;
+        openset.push(NodeDist(startnode, 0));
         while (!openset.empty()) {
             auto p = openset.top();
-            unsigned int v = get<0>(p);
-            double d = get<1>(p);
+
             openset.pop();
-            if (distances[v] > d) {
-                distances[v] = d;
+
+            if (dist_[p.ver] > p.dis) {
+                dist_[p.ver] = p.dis;
             }
-            auto neis = g_.neighbours(v);
+            // cout << p.ver << " " << p.dis << " \n";
+            vector<unsigned int> neis = g_.neighbours(p.ver);
+
+            for (size_t i = 0; i < neis.size(); ++i) {
+                double t = dist_[p.ver] + g_.get_edge_value(p.ver, neis[i]);
+                if (dist_[neis[i]] > t) {
+                    openset.push(NodeDist(neis[i], t));
+                }
+            }
         }
     }
 
 private:
     Graph g_;
-    vector<double> distances;
+    vector<double> dist_;
     unsigned int startnode;
-
-    using NodeDist = tuple<unsigned int, double>;
 };
 
-struct NodeDist {
-    unsigned int ver;
-    double dis;
-    bool operator<(const NodeDist& n2) { return dis < n2.dis; };
-};
+int main() {}
