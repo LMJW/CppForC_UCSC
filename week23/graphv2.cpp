@@ -157,4 +157,30 @@ private:
     unsigned int startnode;
 };
 
+/// Simulate random generate graphs and get the shortestpath from node 0 to
+/// destination node
+class Simulation {
+public:
+    /// @pram v size of graph
+    /// @pram p percentage of node being connected
+    /// @pram min_d minimum distance for an edge
+    /// @pram max_d maximum distance for an edge
+    Simulation(
+        unsigned int v, double p, double min_d, double max_d, unsigned int t)
+        : ver_(v), percentage(p), mind(min_d), maxd(max_d), simu_(t) {}
+
+    /// @pram t simulate time
+    /// @return average shortest distance from node 0 to others
+    double simulate(unsigned int t) {}
+
+    ~Simulation() {}
+
+private:
+    unsigned int ver_;
+    double mind;
+    double maxd;
+    double percentage;
+    unsigned int simu_;
+};
+
 int main() {}
