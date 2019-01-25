@@ -1,7 +1,9 @@
+#include <time.h>
 #include <exception>
 #include <iostream>
 #include <limits>
 #include <queue>
+#include <random>
 #include <tuple>
 #include <vector>
 
@@ -167,11 +169,28 @@ public:
     /// @pram max_d maximum distance for an edge
     Simulation(
         unsigned int v, double p, double min_d, double max_d, unsigned int t)
-        : ver_(v), percentage(p), mind(min_d), maxd(max_d), simu_(t) {}
+        : ver_(v), percentage(p), mind(min_d), maxd(max_d), simu_(t) {
+        srand(time(NULL));
+    }
 
     /// @pram t simulate time
     /// @return average shortest distance from node 0 to others
     double simulate(unsigned int t) {}
+
+    bool rand_edge() {
+        double t = (rand() % 100 + 1) / 100;
+        return t < percentage;
+    }
+
+    Graph randgraph() {
+        Graph g = Graph(ver_);
+        for (int i = 0; i < ver_; ++i) {
+            for (int j = i; j < ver_; ++j) {
+                if (rand_edge()) {
+                }
+            }
+        }
+    }
 
     ~Simulation() {}
 
