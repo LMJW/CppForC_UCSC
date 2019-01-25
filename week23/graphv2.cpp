@@ -169,24 +169,24 @@ public:
     /// @pram max_d maximum distance for an edge
     Simulation(
         unsigned int v, double p, double min_d, double max_d, unsigned int t)
-        : ver_(v), percentage(p), mind(min_d), maxd(max_d), simu_(t) {
-        srand(time(NULL));
-    }
+        : ver_(v),
+          percentage(p),
+          mind(min_d),
+          maxd(max_d),
+          simu_(t),
+          exist_edge(0, 1),
+          distance_edge(min_d, max_d) {}
 
     /// @pram t simulate time
     /// @return average shortest distance from node 0 to others
     double simulate(unsigned int t) {}
 
-    bool rand_edge() {
-        double t = (rand() % 100 + 1) / 100;
-        return t < percentage;
-    }
-
     Graph randgraph() {
         Graph g = Graph(ver_);
         for (int i = 0; i < ver_; ++i) {
             for (int j = i; j < ver_; ++j) {
-                if (rand_edge()) {
+                if (exist_edge(random_generator_) < percentage) {
+                    g.set_edge(i, j, distance_edge(random_generator_));
                 }
             }
         }
@@ -200,6 +200,10 @@ private:
     double maxd;
     double percentage;
     unsigned int simu_;
+
+    mt19937 random_generator_;
+    uniform_real_distribution<double> exist_edge;
+    uniform_real_distribution<double> distance_edge;
 };
 
 int main() {}
