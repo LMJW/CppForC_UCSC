@@ -179,8 +179,28 @@ public:
 
     /// @pram t simulate time
     /// @return average shortest distance from node 0 to others
-    double simulate(unsigned int t) {}
+    double simulate() {
+        double sum_total = 0.0;
+        for (size_t i = 0; i < simu_; ++i) {
+            Graph g__ = randgraph();
+            ShortestPath sp(g__, 0);
+            double res = 0.0;
+            int count = 0;
 
+            for (size_t i = 1; i < g__.V(); ++i) {
+                /// Do not include the node if it is not connected to graph
+                if (sp[i] < MAX_DIST) {
+                    res += sp[i];
+                    ++count;
+                }
+            }
+            res = res / count;
+            sum_total += res;
+        }
+        return sum_total / simu_;
+    }
+
+    /// @return random generated Graph object
     Graph randgraph() {
         Graph g = Graph(ver_);
         for (int i = 0; i < ver_; ++i) {
@@ -199,11 +219,17 @@ private:
     double mind;
     double maxd;
     double percentage;
-    unsigned int simu_;
+    unsigned int simu_;  /// number of simulatin time
 
     mt19937 random_generator_;
     uniform_real_distribution<double> exist_edge;
     uniform_real_distribution<double> distance_edge;
 };
 
-int main() {}
+int main() {
+    cout << "My graph simulation:\n";
+    Simulation s1(50, 0.2, 1, 10, 50);
+    cout << s1.simulate() << " \n";
+    // Simulation s2(50, 0.4, 1, 10, 50);
+    // cout << s2.simulate() << " \n";
+}
