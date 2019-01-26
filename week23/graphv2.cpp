@@ -257,8 +257,8 @@ private:
 
 int main() {
     cout << "My graph simulation:\n";
-    Simulation s1(5, 0.4, 1, 10, 1);
+    Simulation s1(50, 0.2, 1, 10, 5000);
     cout << s1.simulate() << " \n";
-    // Simulation s2(50, 0.4, 1, 10, 50);
-    // cout << s2.simulate() << " \n";
+    Simulation s2(50, 0.4, 1, 10, 5000);
+    cout << s2.simulate() << " \n";
 }
