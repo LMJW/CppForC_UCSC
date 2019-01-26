@@ -90,11 +90,12 @@ public:
 
     /// Add print function for easy debug
     void print() {
-        for (int i = 0; i < adj_.size(); ++i) {
-            cout << adj_[i] << " ";
-            if (i % n_v == 0) {
-                cout << "\n";
+        cout << "graph matrix :\n";
+        for (int i = 0; i < n_v; ++i) {
+            for (int j = 0; j < n_v; ++j) {
+                cout << adj_[index_for(i, j)] << " ";
             }
+            cout << "\n";
         }
     }
 
@@ -105,7 +106,6 @@ protected:
         if (x >= n_v || y >= n_v) {
             throw invalid_argument("outbound of adjcent matrix!");
         }
-        cout << x << " " << y << " " << x * n_v + y << " \n";
 
         return x * n_v + y;
     }
@@ -121,8 +121,8 @@ private:
 
 class ShortestPath {
 public:
-    /// ShortestPath takes an graph object and calculate the shortest distance
-    /// from starting node to all other nodes
+    /// ShortestPath takes an graph object and calculate the shortest
+    /// distance from starting node to all other nodes
     ///
     /// @pram g Graph object
     /// @pram start unsigned int as starting vertices
@@ -165,9 +165,11 @@ protected:
             }
 
             auto n = g_.neighbours(v);
-            for (auto w : n) {
-                cout << w << " ";
-            }
+            // cout << "current v: " << v << ":::nei: ";
+            // for (auto w : n) {
+            //     cout << w << " ";
+            // }
+            // cout << "|\n";
 
             for (auto& w : g_.neighbours(v)) {
                 double t = dist_[v] + g_.get_edge_value(v, w);
@@ -209,21 +211,19 @@ public:
         double sum_total = 0.0;
         for (size_t i = 0; i < simu_; ++i) {
             Graph g = randgraph();
-            g.print();
-            // ShortestPath sp(g, 0);
-            // sp.print();
-            // double res = 0.0;
-            // int count = 0;
+            ShortestPath sp(g, 0);
+            double res = 0.0;
+            int count = 0;
 
-            // for (size_t i = 1; i < g.V(); ++i) {
-            //     /// Do not include the node if it is not connected to graph
-            //     if (sp[i] < MAX_DIST) {
-            //         res += sp[i];
-            //         ++count;
-            //     }
-            // }
-            // res = res / count;
-            // sum_total += res;
+            for (size_t i = 1; i < g.V(); ++i) {
+                /// Do not include the node if it is not connected to
+                if (sp[i] < MAX_DIST) {
+                    res += sp[i];
+                    ++count;
+                }
+            }
+            res = res / count;
+            sum_total += res;
         }
         return sum_total / simu_;
     }
@@ -231,14 +231,11 @@ public:
     /// @return random generated Graph object
     Graph randgraph() {
         Graph g = Graph(ver_);
-        int c = 10;
         for (int i = 0; i < ver_; ++i) {
             for (int j = i + 1; j < ver_; ++j) {
-                // if (exist_edge(random_generator_) < percentage) {
-                //     g.set_edge(i, j, distance_edge(random_generator_));
-                // }
-                g.set_edge(i, j, c);
-                ++c;
+                if (exist_edge(random_generator_) < percentage) {
+                    g.set_edge(i, j, distance_edge(random_generator_));
+                }
             }
         }
         return g;
