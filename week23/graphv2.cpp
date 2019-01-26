@@ -88,6 +88,16 @@ public:
         return adj_[index_for(v1, v2)];
     }
 
+    /// Add print function for easy debug
+    void print() {
+        for (int i = 0; i < adj_.size(); ++i) {
+            cout << adj_[i] << " ";
+            if (i % n_v == 0) {
+                cout << "\n";
+            }
+        }
+    }
+
 protected:
     /// @return the index of 1-d vector given two verices in adjcent matrix
     unsigned int index_for(unsigned int x, unsigned int y) const {
@@ -95,6 +105,8 @@ protected:
         if (x >= n_v || y >= n_v) {
             throw invalid_argument("outbound of adjcent matrix!");
         }
+        cout << x << " " << y << " " << x * n_v + y << " \n";
+
         return x * n_v + y;
     }
 
@@ -124,11 +136,19 @@ public:
     double operator[](unsigned int t) { return dist_[t]; }
     ~ShortestPath() {}
 
+    /// print result
+    void print() {
+        for (int i = 0; i < dist_.size(); ++i) {
+            cout << dist_[i] << " ";
+        }
+        cout << "\n";
+    }
+
 protected:
     void compute() {
         // create a priority queue to store neighbors
         priority_queue<NodeDist, vector<NodeDist>,
-                       less<vector<NodeDist>::value_type> >
+                       greater<vector<NodeDist>::value_type> >
             openset;
         openset.push(NodeDist(startnode, 0));
         while (!openset.empty()) {
@@ -144,9 +164,15 @@ protected:
                 dist_[v] = d;
             }
 
+            auto n = g_.neighbours(v);
+            for (auto w : n) {
+                cout << w << " ";
+            }
+
             for (auto& w : g_.neighbours(v)) {
                 double t = dist_[v] + g_.get_edge_value(v, w);
                 if (dist_[w] > t) {
+                    dist_[w] = t;
                     openset.push(NodeDist(w, t));
                 }
             }
@@ -182,20 +208,22 @@ public:
     double simulate() {
         double sum_total = 0.0;
         for (size_t i = 0; i < simu_; ++i) {
-            Graph g__ = randgraph();
-            ShortestPath sp(g__, 0);
-            double res = 0.0;
-            int count = 0;
+            Graph g = randgraph();
+            g.print();
+            // ShortestPath sp(g, 0);
+            // sp.print();
+            // double res = 0.0;
+            // int count = 0;
 
-            for (size_t i = 1; i < g__.V(); ++i) {
-                /// Do not include the node if it is not connected to graph
-                if (sp[i] < MAX_DIST) {
-                    res += sp[i];
-                    ++count;
-                }
-            }
-            res = res / count;
-            sum_total += res;
+            // for (size_t i = 1; i < g.V(); ++i) {
+            //     /// Do not include the node if it is not connected to graph
+            //     if (sp[i] < MAX_DIST) {
+            //         res += sp[i];
+            //         ++count;
+            //     }
+            // }
+            // res = res / count;
+            // sum_total += res;
         }
         return sum_total / simu_;
     }
@@ -203,13 +231,17 @@ public:
     /// @return random generated Graph object
     Graph randgraph() {
         Graph g = Graph(ver_);
+        int c = 10;
         for (int i = 0; i < ver_; ++i) {
-            for (int j = i; j < ver_; ++j) {
-                if (exist_edge(random_generator_) < percentage) {
-                    g.set_edge(i, j, distance_edge(random_generator_));
-                }
+            for (int j = i + 1; j < ver_; ++j) {
+                // if (exist_edge(random_generator_) < percentage) {
+                //     g.set_edge(i, j, distance_edge(random_generator_));
+                // }
+                g.set_edge(i, j, c);
+                ++c;
             }
         }
+        return g;
     }
 
     ~Simulation() {}
@@ -228,7 +260,7 @@ private:
 
 int main() {
     cout << "My graph simulation:\n";
-    Simulation s1(50, 0.2, 1, 10, 50);
+    Simulation s1(5, 0.4, 1, 10, 1);
     cout << s1.simulate() << " \n";
     // Simulation s2(50, 0.4, 1, 10, 50);
     // cout << s2.simulate() << " \n";
