@@ -62,6 +62,9 @@ public:
         return cost_m[index_for(x, y)];
     }
 
+    /// @return number of vertices in the graph
+    unsigned int V() const { return vertices_; }
+
     /// Print out the cost matrix and adjcent matrix
     void print() {
         cout << "\nCost matrix of the graph: \n";
@@ -145,6 +148,9 @@ private:
 
 struct edge {
     edge(unsigned int x, unsigned int y) : v1(x), v2(y) {}
+    edge(mytriplet m)
+        : v1(m.v1),
+          v2(m.v2) {}  /// Conversion constructor, convert mytriplet to edge
     ~edge() {}
     unsigned int v1;
     unsigned int v2;
@@ -164,21 +170,38 @@ public:
     void showresult() {
         cout << "\nThe total cost of MST is : " << cost << ".\n";
         cout << "The edges are list as below:\n";
-        for (auto e : edges) {
+        for (auto e : edge_pairs) {
             cout << e << "\n";
         }
     }
 
 private:
     Graph _g;
-    double cost;
+    double cost = 0;
     vector<edge> edges;
+    vector<mytriplet> edge_pairs;
     void kru_compute() {
         /// Kruskal Minimum Spanning Tree Algorithm implementation
         auto tps = _g.get_triplets();
 
         sort(tps.begin(), tps.end());
 
+        vector<bool> has_vertices(_g.V(), false);
+
+        /// check if the two edges are in the set
+        /// if both of them are in the set
+        /// this will create loop, we will not add this edge in the vector
+        /// else we will add new edge in the vector
+        for (auto e : tps) {
+            if (has_vertices[e.v1] && has_vertices[e.v2]) {
+                continue;
+            } else {
+                edge_pairs.push_back(e);
+                cost += e.edge_length;
+                has_vertices[e.v1] = true;
+                has_vertices[e.v2] = true;
+            }
+        }
     }
 };
 
@@ -190,6 +213,5 @@ int main() {
     g.print();
     g.check();
     MinSpanningTree mst(g);
-    cout << edge(1, 2) << "\n";
-    cout << mytriplet(1, 2, 3);
+    mst.showresult();
 }
