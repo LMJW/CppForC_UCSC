@@ -146,21 +146,6 @@ private:
     /// TODO: Add color int the graph class
 };
 
-struct edge {
-    edge(unsigned int x, unsigned int y) : v1(x), v2(y) {}
-    edge(mytriplet m)
-        : v1(m.v1),
-          v2(m.v2) {}  /// Conversion constructor, convert mytriplet to edge
-    ~edge() {}
-    unsigned int v1;
-    unsigned int v2;
-
-    friend ostream& operator<<(ostream& out, const edge& e) {
-        out << "(" << e.v1 << "," << e.v2 << ")";
-        return out;
-    }
-};
-
 class MinSpanningTree {
 public:
     MinSpanningTree() {}
@@ -178,7 +163,6 @@ public:
 private:
     Graph _g;
     double cost = 0;
-    vector<edge> edges;
     vector<mytriplet> edge_pairs;
     void kru_compute() {
         /// Kruskal Minimum Spanning Tree Algorithm implementation
