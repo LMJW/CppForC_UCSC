@@ -1,16 +1,46 @@
+#include <algorithm>
 #include <exception>
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <ostream>
 #include <string>
 #include <vector>
 
 using namespace std;
 
+/// define a triplet struct to store the edge length
+/// as we are going to use Kruskal Minimum Spanning Tree Algorithm
+/// store in a vector of triplet is more convient for computation
+
+struct mytriplet {
+    unsigned int v1;
+    unsigned int v2;
+    double edge_length;
+    mytriplet(unsigned int x, unsigned int y, double d)
+        : v1(x), v2(y), edge_length(d) {}
+    ~mytriplet(){};
+
+    /// overload operator to be able to use for sorting
+    friend bool operator<(const mytriplet& t1, const mytriplet& t2) {
+        return t1.edge_length < t2.edge_length;
+    }
+
+    friend bool operator>(const mytriplet& t1, const mytriplet& t2) {
+        return t2 < t1;
+    }
+
+    friend ostream& operator<<(ostream& out, const mytriplet& t) {
+        out << "vertices: (" << t.v1 << "," << t.v2 << ") | "
+            << "edge_length: " << t.edge_length << " ;";
+        return out;
+    }
+};
+
 class Graph {
 public:
     Graph() {}
-
+    ~Graph() {}
     Graph(unsigned int v)
         : vertices_(v), adjcent_m(v * v, false), cost_m(v * v, 0) {}
 
@@ -70,6 +100,8 @@ public:
         cout << "\nCorrect graph data\n";
     }
 
+    vector<mytriplet> get_triplets() { return mytriplets; }
+
 protected:
     unsigned int index_for(unsigned int x, unsigned int y) {
         if (x >= vertices_ || y >= vertices_) {
@@ -97,6 +129,7 @@ protected:
             auto v3 = *start;
             ++start;
             set_edge(v1, v2, v3);
+            mytriplets.push_back(mytriplet(v1, v2, v3));
         }
     }
 
@@ -105,12 +138,49 @@ private:
     unsigned int vertices_;
     vector<bool> adjcent_m;
     vector<double> cost_m;
+    vector<mytriplet> mytriplets;
     string path_;
     /// TODO: Add color int the graph class
 };
 
-// class MinSpanningTree {
-// }
+struct edge {
+    edge(unsigned int x, unsigned int y) : v1(x), v2(y) {}
+    ~edge() {}
+    unsigned int v1;
+    unsigned int v2;
+
+    friend ostream& operator<<(ostream& out, const edge& e) {
+        out << "(" << e.v1 << "," << e.v2 << ")";
+        return out;
+    }
+};
+
+class MinSpanningTree {
+public:
+    MinSpanningTree() {}
+    ~MinSpanningTree() {}
+    MinSpanningTree(Graph& g) : _g(g) { kru_compute(); }
+
+    void showresult() {
+        cout << "\nThe total cost of MST is : " << cost << ".\n";
+        cout << "The edges are list as below:\n";
+        for (auto e : edges) {
+            cout << e << "\n";
+        }
+    }
+
+private:
+    Graph _g;
+    double cost;
+    vector<edge> edges;
+    void kru_compute() {
+        /// Kruskal Minimum Spanning Tree Algorithm implementation
+        auto tps = _g.get_triplets();
+
+        sort(tps.begin(), tps.end());
+
+    }
+};
 
 // class Simulation {
 // }
@@ -119,4 +189,7 @@ int main() {
     Graph g = Graph("data.txt");
     g.print();
     g.check();
+    MinSpanningTree mst(g);
+    cout << edge(1, 2) << "\n";
+    cout << mytriplet(1, 2, 3);
 }
