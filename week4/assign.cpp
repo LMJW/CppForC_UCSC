@@ -52,6 +52,7 @@ public:
     void set_edge(unsigned int x, unsigned int y, double dis) {
         adjcent_m[index_for(x, y)] = true;
         cost_m[index_for(x, y)] = dis;
+        mytriplets.push_back(mytriplet(x, y, dis));
     }
 
     bool isconnected(unsigned int x, unsigned int y) {
@@ -216,7 +217,7 @@ public:
                double den = 0.4,
                double min_d = 1,
                double max_d = 10,
-               unsigned int t = 1)
+               unsigned int t = 3)
         : vertices_(v),
           density_(den),
           min_dis_(min_d),
@@ -303,24 +304,28 @@ private:
             cout << "Graph is linked. processing minimum spanning tree "
                     "simulation ... \n";
             g.print();
+            g.check();
+
             MinSpanningTree mst(g);
             mst.show_detail();
-            mst.show_overall();
         } else {
             /// recursive regenerate graph to simulate the result if graph is
             /// not linked graph
             cout << "Graph is not linked. Regenerate graph ...\n";
-            delete &g;
+            /// delete &g;
+            /// ?DO I need to delete g?
             simulate();
         }
     };
 };
 
 int main() {
+    cout << "Load sample graph data ....\n";
     Graph g = Graph("data.txt");
     g.print();
     g.check();
     MinSpanningTree mst(g);
     mst.show_detail();
+    cout << "\n\n Start my simulation...\n";
     Simulation sl(10);
 }
