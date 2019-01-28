@@ -8,6 +8,7 @@
 #include <ostream>
 #include <random>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -36,6 +37,62 @@ struct mytriplet {
         out << "vertices: (" << t.v1 << "," << t.v2 << ") | "
             << "edge_length: " << t.edge_length << " ;";
         return out;
+    }
+};
+
+/// implement disjoint set for Kruskal algorithm
+/// Use set as internal datastructure
+/// the implementation used unordered-hashmap
+struct disjointset {
+    /// Create an unordered map to store the disjoint set
+    /// the reference of this implementation
+    /// https://en.wikipedia.org/wiki/Disjoint-set_data_structure
+    unordered_map<int, int> parent;
+    unordered_map<int, int> rank;
+    disjointset(){};
+    /// @pram x is the key we want to find in the disjoint set
+    /// if x is not in the disjoint set
+    /// we will add x into disjoint set, with its parent point to itself
+    /// and rank equals to 0
+    ///
+    /// @return the parent of the key
+    int findset(int x) {
+        auto it = parent.find(x);
+        if (it == parent.end()) {
+            parent.insert({x, x});
+            rank.insert({x, 0});
+            return x;
+        }
+        if (it->second == x) {
+            return x;
+        }
+        return findset(it->second);
+    }
+
+    /// union two subset
+    /// @parm x,y elements in sets(can be same or different sets)
+    void union_set(int x, int y) {
+        int p1 = findset(x);
+        int p2 = findset(y);
+        if (rank[p1] == rank[p2]) {
+            parent[p1] = parent[p2];
+            ++rank[p2];
+        } else if (rank[p1] > rank[p2]) {
+            parent[p2] = parent[p1];
+        } else {
+            parent[p1] = parent[p2];
+        }
+    }
+
+    /// print for debug
+    void print() {
+        for (auto it = parent.begin(); it != parent.end(); ++it) {
+            cout << "key:" << it->first << ", parent:" << it->second << "|\n";
+        }
+        cout << "xxxxxx\n";
+        for (auto it = rank.begin(); it != rank.end(); ++it) {
+            cout << "key:" << it->first << ", rank:" << it->second << "|\n";
+        }
     }
 };
 
@@ -189,20 +246,20 @@ private:
 
         sort(tps.begin(), tps.end());
 
-        vector<bool> has_vertices(_g.V(), false);
+        disjointset DS;
 
         /// check if the two edges are in the set
         /// if both of them are in the set
         /// this will create loop, we will not add this edge in the vector
         /// else we will add new edge in the vector
         for (auto e : tps) {
-            if (has_vertices[e.v1] && has_vertices[e.v2]) {
+            if (DS.findset(e.v1) == DS.findset(e.v2)) {
+                /// v1 & v2 in the same disjoint set
                 continue;
             } else {
                 edge_pairs.push_back(e);
                 cost += e.edge_length;
-                has_vertices[e.v1] = true;
-                has_vertices[e.v2] = true;
+                DS.union_set(e.v1, e.v2);
             }
         }
     }
@@ -330,4 +387,15 @@ int main() {
     mst.show_detail();
     cout << "\n\n Start my simulation...\n";
     Simulation sl(10);
+
+    // disjointset ds;
+    // ds.findset(1);
+    // ds.findset(2);
+    // ds.findset(3);
+    // ds.findset(4);
+    // ds.union_set(1, 2);
+    // ds.union_set(3, 4);
+    // ds.print();
+    // ds.union_set(2, 3);
+    // ds.print();
 }
