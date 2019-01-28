@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iterator>
 #include <ostream>
+#include <random>
 #include <string>
 #include <vector>
 
@@ -12,7 +13,6 @@ using namespace std;
 /// define a triplet struct to store the edge length
 /// as we are going to use Kruskal Minimum Spanning Tree Algorithm
 /// store in a vector of triplet is more convient for computation
-
 struct mytriplet {
     unsigned int v1;
     unsigned int v2;
@@ -65,6 +65,17 @@ public:
     /// @return number of vertices in the graph
     unsigned int V() const { return vertices_; }
 
+    /// get neighbors
+    vector<unsigned int> get_neighbors(unsigned int v1) {
+        vector<unsigned int> res;
+        for (unsigned int i = 0; i < vertices_; ++i) {
+            if (isconnected(v1, i)) {
+                res.push_back(i);
+            }
+        }
+        return res;
+    }
+
     /// Print out the cost matrix and adjcent matrix
     void print() {
         cout << "\nCost matrix of the graph: \n";
@@ -84,7 +95,7 @@ public:
     }
 
     /// check if the connectivity matrix matches the cost matrix
-    /// eg. whether cost[i,j]> 0 if adjcent_m[i,j] = true
+    /// eg. whether cost[i,j]> 0 && adjcent_m[i,j] = true
     ///
     /// For easy debug purposes
     void check() {
@@ -103,6 +114,7 @@ public:
         cout << "\nCorrect graph data\n";
     }
 
+    /// @return a vector of triplets for Minimum spanning tree to calculate
     vector<mytriplet> get_triplets() { return mytriplets; }
 
 protected:
@@ -152,12 +164,16 @@ public:
     ~MinSpanningTree() {}
     MinSpanningTree(Graph& g) : _g(g) { kru_compute(); }
 
-    void showresult() {
+    void show_detail() {
         cout << "\nThe total cost of MST is : " << cost << ".\n";
         cout << "The edges are list as below:\n";
         for (auto e : edge_pairs) {
             cout << e << "\n";
         }
+    }
+
+    void show_overall() {
+        cout << "\n The total cost of MST is: " << cost << ".\n";
     }
 
 private:
@@ -189,13 +205,122 @@ private:
     }
 };
 
-// class Simulation {
-// }
+class Simulation {
+public:
+    /// @parm v number of vertices of graph
+    /// @pram den_ graph density
+    /// @pram min_d minimum distance of an edge
+    /// @pram max_d maximum distance of an edge
+    /// @pram t number of simulation time
+    Simulation(unsigned int v = 50,
+               double den = 0.4,
+               double min_d = 1,
+               double max_d = 10,
+               unsigned int t = 1)
+        : vertices_(v),
+          density_(den),
+          min_dis_(min_d),
+          max_dis_(max_d),
+          simulate_times(t),
+          random_generator_(0),
+          _distance_distribution(min_d, max_d),
+          _existance_distribution(0, 1) {}
+    ~Simulation() {
+        for (int i = 1; i <= simulate_times; ++i) {
+            cout << "\n***************************************\n";
+            cout << "simulate No. " << i << " ...\n";
+            simulate();
+        }
+    }
+
+    /// Not optimized solution
+    bool check_linked_graph(Graph& g_) {
+        cout << "checking whether graph is linked ...\n";
+        vector<bool> reference(g_.V(), false);
+
+        vector<unsigned int> _mystack = {0};
+        reference[0] = true;
+
+        while (_mystack.size() > 0) {
+            auto ver = _mystack.back();
+            _mystack.pop_back();
+            auto neibs = g_.get_neighbors(ver);  /// O(v) operation
+            for (auto n : neibs) {
+                if (!reference[n]) {
+                    _mystack.push_back(n);
+                    reference[n] = true;
+                }
+            }
+        }
+
+        for (auto r : reference) {
+            if (!r) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+private:
+    unsigned int simulate_times;
+    double density_;
+    double min_dis_;
+    double max_dis_;
+    unsigned int vertices_;
+
+    mt19937 random_generator_;
+    uniform_real_distribution<double> _distance_distribution;
+    uniform_real_distribution<double> _existance_distribution;
+
+    /// simulate function;
+    /// generate randomize graph to simulate the mst
+    /// As our algorithm only works with linked graph(no isolated node or
+    /// sub-graph), we need to check whether the graph is connected
+    void simulate() {
+        Graph g = Graph(vertices_);
+        if (density_ <= 0) {
+            throw invalid_argument("density should be larger than 0");
+        } else if (density_ < 0.2) {
+            cout << "\nDensity is small; random generated graph maybe "
+                    "unlinked;\n";
+            cout << "Program may run more iteration to get the linked graph;\n";
+            cout << "You should set the density larger to get faster "
+                    "simulation.\n";
+        }
+        cout << "generating random graph...\n";
+        for (unsigned int i = 0; i < vertices_; ++i) {
+            for (unsigned int j = i + 1; j < vertices_; ++j) {
+                if (_existance_distribution(random_generator_) < density_) {
+                    /// undirected graph
+                    double d = _distance_distribution(random_generator_);
+                    g.set_edge(i, j, d);
+                    g.set_edge(j, i, d);
+                }
+            }
+        }
+
+        if (check_linked_graph(g)) {
+            cout << "Graph is linked. processing minimum spanning tree "
+                    "simulation ... \n";
+            g.print();
+            MinSpanningTree mst(g);
+            mst.show_detail();
+            mst.show_overall();
+        } else {
+            /// recursive regenerate graph to simulate the result if graph is
+            /// not linked graph
+            cout << "Graph is not linked. Regenerate graph ...\n";
+            delete &g;
+            simulate();
+        }
+    };
+};
 
 int main() {
     Graph g = Graph("data.txt");
     g.print();
     g.check();
     MinSpanningTree mst(g);
-    mst.showresult();
+    mst.show_detail();
+    Simulation sl(10);
 }
