@@ -226,3 +226,34 @@ the run time basically look up the instance, depends on the type of instance, an
 - overloading : compile-time selected based on signature
 - it can have distinct return types
 - once it defined as `virtual`, it will persist in the derived class.
+
+comments on virtual program
+
+- different `print_i` is executed
+  - Dynamically selected on the object pointed at
+  - select corresponding version at run time
+  - overhead in performance
+
+## 2.14 Confusion with overloading
+
+```cpp
+class B{
+public:
+    virtual foo(int);
+    virtual foo(double); // foo(double) overload foo(int) and can be recongised by compiler
+    ...
+};
+
+class D:public B{
+public:
+    foo(int); // this is confusing
+}
+```
+
+Restriction on virtual function
+
+- non-static member function cannot be virtual
+- virual characteristic is inherited
+- constructor cannot be virtual
+  - (factory pattern can produce code similar to virtual constructor)
+- Destructor can be virtual
