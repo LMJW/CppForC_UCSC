@@ -205,4 +205,24 @@ SUMMARY
 
 ## 2.13 virtual function
 
+virtual function selection
 
+what is virtual function selection?
+
+as we can see before, the pointer of base class will always print base student infomation even after conversion.
+
+So what is virtual function?
+
+- typical base has virtual function and derived has their versions of function
+- pointer to class can point as either base or derived class object
+- member function selected depended on class of object being pointed at, not on pointer type.
+
+virtual function will look up table of member functions at run time rather than select at compile time. The deduced the efficiency of the program.
+
+the run time basically look up the instance, depends on the type of instance, and then go to the virtual function table and pick up the correct virtual function.
+
+**overloading && overwritting**
+
+- overloading : compile-time selected based on signature
+- it can have distinct return types
+- once it defined as `virtual`, it will persist in the derived class.
