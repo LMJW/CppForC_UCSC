@@ -1,5 +1,6 @@
 #include <exception>
 #include <iostream>
+#include <unordered_map>
 #include <vector>
 
 using namespace std;
@@ -47,6 +48,31 @@ struct disjointset {
     ///
     /// we can use the parent and node distance to see if a player has win a
     /// game
+    unordered_map<unsigned int, unsigned int> parent;
+    unordered_map<unsigned int, unsigned int> rank;
+
+    /// @pram find the element in disjoint set
+    /// if the element is not in the set
+    /// insert this element into set
+    /// and set its parent as itself
+    unsigned int find(unsigned int x) {
+        auto fd = parent.find(x);
+        if (fd == parent.end()) {
+            parent.insert({x, x});
+            rank.insert({x, 0});
+            return x;
+        }
+        auto t = parent.find(fd->second);
+        while (t != fd) {
+            fd = t;
+            t = parent.find(t->second);
+        }
+        return t->second;
+    }
+
+    /// Union two sets, if x,y in the same set, it will not do anything
+    ///  when this function is executed, x and y should aready in the set now
+    void Union(unsigned int x, unsigned int y) {}
 };
 
 class HexBoard {
@@ -130,4 +156,7 @@ private:
 int main() {
     HexBoard hb(7);
     hb.draw();
+    disjointset ds;
+    cout << ds.find(3);
+    cout << ds.find(5);
 }
