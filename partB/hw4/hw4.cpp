@@ -39,44 +39,13 @@ struct HexNode {
     }
 };
 
-struct disjointset {
-    /// use disjointset datastructure to store the graph for keeping track of
-    /// each player's state
-    ///
-    /// we can define the rank of disjointset by the highest row number or
-    /// highest col number
-    ///
-    /// we can use the parent and node distance to see if a player has win a
-    /// game
-    unordered_map<unsigned int, unsigned int> parent;
-    unordered_map<unsigned int, unsigned int> rank;
-
-    /// @pram find the element in disjoint set
-    /// if the element is not in the set
-    /// insert this element into set
-    /// and set its parent as itself
-    unsigned int find(unsigned int x) {
-        auto fd = parent.find(x);
-        if (fd == parent.end()) {
-            parent.insert({x, x});
-            rank.insert({x, 0});
-            return x;
-        }
-        auto t = parent.find(fd->second);
-        while (t != fd) {
-            fd = t;
-            t = parent.find(t->second);
-        }
-        return t->second;
-    }
-
-    /// Union two sets, if x,y in the same set, it will not do anything
-    ///  when this function is executed, x and y should aready in the set now
-    void Union(unsigned int x, unsigned int y) {}
-};
-
 class HexBoard {
 public:
+    /// I define a modified disjointset as a member of hexboard class as it
+    /// needs to access the hex position to determin whether two nodes are
+    /// connected.
+    struct disjointset;
+
     /// @pram n use 1-d array to store all the nodes
     /// nodes can be accessed through x*grid_+y
     HexBoard(unsigned int n) : nodes(n * n, HexNode()), grid_(n), turns(true) {}
@@ -90,10 +59,7 @@ public:
         return get_node_status(x, y) == nodestatus::BLANK;
     }
 
-    /// @return 0 if nobody has win
-    /// @return 1 is blue player win
-    /// @return 2 if red player win
-    int check_winner() {}
+    vector<unsigned int> get_neibours(unsigned int x, unsigned int y) {}
 
     void draw() {
         /// The draw include draw the node and the connection between nodes
@@ -153,10 +119,50 @@ private:
     }
 };
 
+class HexBoard ::disjointset {
+    /// use disjointset datastructure to store the graph for keeping track of
+    /// each player's state
+    ///
+
+    unordered_map<unsigned int, unsigned int> parent;
+
+    /// @pram find the element in disjoint set
+    /// if the element is not in the set
+    /// insert this element into set
+    /// and set its parent as itself
+    ///
+    /// parent will always larger or equal to node's value
+    unsigned int find(unsigned int x, unsigned int y) {
+        /// all neighbors
+        /// (x-1,y),(x-1,y+1)
+        /// (x,y-1),(x,y+1)
+        /// (x+1,y-1),(x+1,y)
+    }
+
+    /// Union two sets, if x,y in the same set, it will not do anything
+    /// when this function is executed, x and y should already in the set now
+    void Union(unsigned int x, unsigned int y) { return; }
+
+    /// Use print for debuging
+    void print() {
+        cout << "parent list:\n";
+        for (auto e : parent) {
+            cout << "(" << e.first << " , " << e.second << ");";
+        }
+        cout << endl;
+    }
+};
+
 int main() {
     HexBoard hb(7);
     hb.draw();
-    disjointset ds;
-    cout << ds.find(3);
-    cout << ds.find(5);
+    // disjointset df;
+    // df.find(3);
+    // df.find(4);
+    // df.find(5);
+    // df.Union(3, 4);
+    // df.Union(4, 5);
+    // df.Union(1, 6);
+    // df.Union(1, 5);
+    // df.print();
 }
