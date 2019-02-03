@@ -43,16 +43,16 @@ struct HexNode {
 class HexBoard {
 public:
     /// @pram n use 1-d array to store all the nodes
-    /// nodes can be accessed through x*grid_+y
+    /// nodes can be accessed through r*grid_+c
     HexBoard(unsigned int n) : nodes(n * n, HexNode()), grid_(n), turns(true) {}
-    nodestatus get_node_status(unsigned int x, unsigned int y) {
-        return nodes[index_of(x, y)].current;
+    nodestatus get_node_status(unsigned int r, unsigned int c) {
+        return nodes[index_of(r, c)].current;
     }
 
     /// if node is still blank, then it's a valid move
-    /// @pram x,y node position
-    bool check_blank(unsigned int x, unsigned int y) {
-        return get_node_status(x, y) == nodestatus::BLANK;
+    /// @pram r,c node position
+    bool check_blank(unsigned int r, unsigned int c) {
+        return get_node_status(r, c) == nodestatus::BLANK;
     }
 
     bool check_is_blue(unsigned int idx) {
@@ -145,24 +145,24 @@ public:
         }
     }
 
-    /// @pram x, y the index of grid where player want to place their hex
+    /// @pram r, c the index of grid where player want to place their hex
     /// @return boolean to confirm whether player's move is successful
     /// if the move is not a valid move, a false will returned and the reason
     /// will be printed on the stdout
-    bool place_hex(unsigned int x, unsigned int y) {
+    bool place_hex(unsigned int r, unsigned int c) {
         unsigned int position;
         try {
-            position = index_of(x, y);
+            position = index_of(r, c);
         } catch (invalid_argument e) {
             cout << e.what() << endl;
             cout << "please re-enter a correct move:\n";
             return false;
         }
-        if (check_blank(x, y)) {
+        if (check_blank(r, c)) {
             if (turns) {
-                nodes[index_of(x, y)].move(1);
+                nodes[index_of(r, c)].move(1);
             } else {
-                nodes[index_of(x, y)].move(2);
+                nodes[index_of(r, c)].move(2);
             }
             return true;
         }
@@ -175,21 +175,21 @@ public:
         cout << "The index starts from up left corner with index 0,0, and the "
                 "down right corner with index "
              << grid_ - 1 << "," << grid_ - 1 << ".\n";
-        cout << "You need to enter the index x y seperate with space to place "
+        cout << "You need to enter the index r c seperate with space to place "
                 "your hex on the grid\n";
 
         auto bluewin = check_win(1);
         auto redwin = check_win(2);
-        unsigned int x, y;
+        unsigned int r, c;
         while (!bluewin && !redwin) {
             if (turns) {
                 cout << "Now is Blue player's turn:\n";
             } else {
                 cout << "Now is Red player's turn:\n";
             }
-            cin >> x >> y;
-            while (!place_hex(x, y)) {
-                cin >> x >> y;
+            cin >> r >> c;
+            while (!place_hex(r, c)) {
+                cin >> r >> c;
             }
             turns = !turns;
             draw();
@@ -202,37 +202,37 @@ private:
     vector<HexNode> nodes;
     unsigned int grid_;
     bool turns;  /// Indicate the current turn player : true->Blue ; false->Red
-    unsigned int index_of(unsigned int x, unsigned int y) const {
-        if (x > grid_ || y > grid_) {
+    unsigned int index_of(unsigned int r, unsigned int c) const {
+        if (r > grid_ || c > grid_) {
             throw invalid_argument("input out of bound.");
         };
-        return x * grid_ + y;
+        return r * grid_ + c;
     }
 
     vector<unsigned int> get_neighbors(unsigned int idx) const {
-        /// 1-d index to actual x, y index
-        unsigned int x = idx / grid_;
-        unsigned int y = idx % grid_;
+        /// 1-d index to actual r, c index
+        unsigned int r = idx / grid_;
+        unsigned int c = idx % grid_;
 
         vector<unsigned int> neis;
         /// six possible neighbor options
-        if (y + 1 < grid_) {
-            if (x > 0) {
-                neis.push_back(index_of(x - 1, y + 1));
+        if (c + 1 < grid_) {
+            if (r > 0) {
+                neis.push_back(index_of(r - 1, c + 1));
             };
-            neis.push_back(index_of(x, y + 1));
+            neis.push_back(index_of(r, c + 1));
         };
-        if (x + 1 < grid_) {
-            neis.push_back(index_of(x + 1, y));
+        if (r + 1 < grid_) {
+            neis.push_back(index_of(r + 1, c));
         };
-        if (x > 0) {
-            neis.push_back(index_of(x - 1, y));
+        if (r > 0) {
+            neis.push_back(index_of(r - 1, c));
         };
-        if (y > 0) {
-            if (x + 1 < grid_) {
-                neis.push_back(index_of(x + 1, y - 1));
+        if (c > 0) {
+            if (r + 1 < grid_) {
+                neis.push_back(index_of(r + 1, c - 1));
             };
-            neis.push_back(index_of(x, y - 1));
+            neis.push_back(index_of(r, c - 1));
         };
 
         return neis;
