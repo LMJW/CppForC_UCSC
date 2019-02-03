@@ -81,17 +81,29 @@ public:
         vector<unsigned int> start_nodes;
         unordered_set<unsigned int> end_nodes;
         switch (player) {
-            case 1:  /// if player blue wins
+            case 1:  /// if player blue wins, that means no path from left to
+                     /// right edge
                 for (unsigned int i = 0; i < grid_; ++i) {
-                    start_nodes.push_back(index_of(0, i));
-                    end_nodes.insert(index_of(grid_ - 1, i));
+                    if (!check_is_blue(index_of(i, 0))) {
+                        /// the start point can only be no blue hex
+                        start_nodes.push_back(index_of(i, 0));
+                    }
+                    if (!check_is_blue(index_of(i, grid_ - 1))) {
+                        /// the end point must not be blue point
+                        end_nodes.insert(index_of(i, grid_ - 1));
+                    }
                 }
                 break;
 
-            case 2:  /// if player red wins
+            case 2:  /// if player red wins, that means no path from top to
+                     /// bottom
                 for (unsigned int i = 0; i < grid_; ++i) {
-                    start_nodes.push_back(index_of(i, 0));
-                    end_nodes.insert(index_of(i, grid_ - 1));
+                    if (!check_is_red(index_of(0, i))) {
+                        start_nodes.push_back(index_of(0, i));
+                    }
+                    if (!check_is_red(index_of(grid_ - 1, i))) {
+                        end_nodes.insert(index_of(grid_ - 1, i));
+                    }
                 }
                 break;
         }
@@ -196,6 +208,12 @@ public:
             bluewin = check_win(1);
             redwin = check_win(2);
         }
+        cout << "Game over!!!\nThe winner is ";
+        if (bluewin) {
+            cout << "BLUE\n!";
+        } else {
+            cout << "RED\n!";
+        }
     }
 
 private:
@@ -260,14 +278,18 @@ private:
             vector<unsigned int> nextstart;
 
             if (player == 1) {  /// check player blue win or not
+                /// so we check using all none blue hex to see if if connect
+                /// from left to right
                 for (auto e : nbs) {
-                    if (!check_is_red(e)) {
+                    if (!check_is_blue(e)) {
                         nextstart.push_back(e);
                     };
                 }
             } else {
+                /// check player red win or not
+                /// so we need to use none-red hex
                 for (auto e : nbs) {
-                    if (!check_is_blue(e)) {
+                    if (!check_is_red(e)) {
                         nextstart.push_back(e);
                     };
                 }
@@ -279,6 +301,6 @@ private:
 };
 
 int main() {
-    HexBoard hb(7);
+    HexBoard hb(4);
     hb.start_game();
 }
