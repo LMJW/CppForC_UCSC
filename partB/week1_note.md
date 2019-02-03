@@ -365,6 +365,7 @@ void stable_sort(RandAcc b, RandAcc e);
 ```
 
 # 1.11 Non-mutating sequence algorithm
+
 - Do not mutate contents of the container they work on
 - typical operation is searching container for particular element and return its position.
 
