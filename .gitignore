@@ -1,4 +1,7 @@
-*.out
+*.out*
 *.pdf
 other*
 .vscode/*
+*.idea
+*.vscode
+*cmake-build-debug*

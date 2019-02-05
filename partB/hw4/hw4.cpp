@@ -211,8 +211,10 @@ public:
         cout << "Game over!!!\nThe winner is ";
         if (bluewin) {
             cout << "BLUE\n!";
-        } else {
+        } else if (redwin) {
             cout << "RED\n!";
+        } else {
+            cout << "BUG\n";
         }
     }
 
@@ -272,6 +274,7 @@ private:
             has_gone.insert(sn);
             auto iter = end.find(sn);
             if (iter != end.end()) {
+                /// can find a path, thus player does not win
                 return false;
             }
             const auto& nbs = get_neighbors(sn);
@@ -281,7 +284,8 @@ private:
                 /// so we check using all none blue hex to see if if connect
                 /// from left to right
                 for (auto e : nbs) {
-                    if (!check_is_blue(e)) {
+                    auto it = has_gone.find(e);
+                    if (it == has_gone.end() && !check_is_blue(e)) {
                         nextstart.push_back(e);
                     };
                 }
@@ -289,18 +293,22 @@ private:
                 /// check player red win or not
                 /// so we need to use none-red hex
                 for (auto e : nbs) {
-                    if (!check_is_red(e)) {
+                    auto it = has_gone.find(e);
+
+                    if (it == has_gone.end() && !check_is_red(e)) {
                         nextstart.push_back(e);
                     };
                 }
             }
-            return _dfs_(nextstart, end, has_gone, player);
+            if (!_dfs_(nextstart, end, has_gone, player)) {
+                return false;
+            };
         }
         return true;
     }
 };
 
 int main() {
-    HexBoard hb(4);
+    HexBoard hb(7);
     hb.start_game();
 }
