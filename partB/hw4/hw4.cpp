@@ -200,7 +200,11 @@ public:
                 cout << "Now is Red player's turn:\n";
             }
             cin >> r >> c;
+            /// check if the input is valid, if it is not valid, player need to
+            /// reenter the next move
             while (!place_hex(r, c)) {
+                cout << "(" << r << "," << c
+                     << ") is invalid, please re-enter:\n";
                 cin >> r >> c;
             }
             turns = !turns;
@@ -213,8 +217,6 @@ public:
             cout << "BLUE\n!";
         } else if (redwin) {
             cout << "RED\n!";
-        } else {
-            cout << "BUG\n";
         }
     }
 
@@ -229,6 +231,7 @@ private:
         return r * grid_ + c;
     }
 
+    /// given a node index, find all its neighbors
     vector<unsigned int> get_neighbors(unsigned int idx) const {
         /// 1-d index to actual r, c index
         unsigned int r = idx / grid_;
@@ -300,6 +303,9 @@ private:
                     };
                 }
             }
+            /// if we found a path, that means the current play does not win
+            /// so we will directly return. Otherwise, we need to continue
+            /// search untill all possible path are searched.
             if (!_dfs_(nextstart, end, has_gone, player)) {
                 return false;
             };
