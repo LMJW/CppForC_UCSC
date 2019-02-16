@@ -12,6 +12,14 @@
 using namespace std;
 enum class nodestatus : short { BLANK, BLUE, RED };
 
+/// Define a abstract base player class to play the hex game
+class Player {
+public:
+    Player() {}
+    ~Player() {}
+    virtual pair<int, int> play() = 0;
+};
+
 struct HexNode {
     /// Node does not know what position it is,
     /// it only know and care about its status.
@@ -47,108 +55,35 @@ struct HexNode {
     }
 };
 
-struct winpair {
-    int idx, count;
-    winpair() : idx(0), count(0) {}
-    winpair(int x, int y) : idx(x), count(y) {}
-    friend bool operator>(const winpair& w1, const winpair& w2) {
-        return w1.count > w2.count;
-    }
-};
-
-class MonteCarlo {
-public:
-    /// snapshot the state of current hexboard
-    MonteCarlo(int n, HexBoard hb) : simu(n), snapshot(hb) {}
-    /// Simulate the play using monte carlo
-    int simulate() {
-        /// Simulate the play
-        for (int i = 0; i < simu; ++i) {
-            /// play until the whole hexboard is filled
-            /// we can add a counter inside the hexboard to keep track on how
-            /// many moves have been made. We will randomly pick a number to
-            /// place hex. If it cannot fill, we will make another random move
-            /// until we fill all hexes.
-            auto ns = HexBoard(snapshot);
-            while (ns.filled < ns.nodes.size()) {
-                auto nextmove = rand() % ns.nodes.size();
-                int r = nextmove / ns.grid_, c = nextmove % ns.grid_;
-                if (ns.check_blank(r, c)) {
-                    ns.place_hex(r, c);
-                }
-            }
-            /// Check if player blue wins. if not, then player red wins as hex
-            /// cannot be draw and will always have a winner.
-            /// check snapshot turns to determine which player should move and
-            /// that player's winning condition
-            bool win;
-            int player;
-            if (snapshot.turns) {
-                player = 1;  /// blue player
-            } else {
-                player = 2;  /// red player
-            }
-            win = ns.check_win(player);
-            if (win) {
-                for (int i = 0; i < ns.nodes.size(); ++i) {
-                    if (ns.check_player(i) == player) {
-                        if (wincount.find(i) == wincount.end()) {
-                            wincount[i] = 1;
-                        } else {
-                            ++wincount[i];
-                        }
-                    }
-                }
-            } else {
-                for (int i = 0; i < ns.nodes.size(); ++i) {
-                    if (ns.check_player(i) == player) {
-                        if (wincount.find(i) == wincount.end()) {
-                            wincount[i] = -1;
-                        } else {
-                            --wincount[i];
-                        }
-                    }
-                }
-            }
-        }
-
-        for (auto it = wincount.begin(); it != wincount.end(); ++it) {
-            auto p = winpair(it->first, it->second);
-            bestmove.push(p);
-        }
-
-        for (auto t = bestmove.top(); !bestmove.empty(); bestmove.pop()) {
-            t = bestmove.top();
-            int r = t.idx / snapshot.grid_;
-            int c = t.idx % snapshot.grid_;
-            if (snapshot.check_blank(r, c)) {
-                return t.idx;
-            }
-        }
-    }
-
-private:
-    int simu;
-    /// snapshot the current state of HexBoard
-    HexBoard snapshot;
-    unordered_map<int, int> wincount;
-    priority_queue<winpair, vector<winpair>, greater<winpair>> bestmove;
-};
-
 class HexBoard {
 public:
-    /// Define friend class so the MonteCarlo can access the private data
-    friend class MonteCarlo;
+    /// Define friend class so the Player can access the private data
+    friend class Player;
 
     /// @pram n use 1-d array to store all the nodes
-    /// nodes can be accessed through r*grid_+c
-    HexBoard(unsigned int n) : nodes(n * n, HexNode()), grid_(n), turns(true) {}
+    /// nodes can be accessed through r*grid_n+c
+
+    HexBoard(unsigned int n)
+        : nodes(n * n, HexNode()), grid_n(n), turns(true) {}
+
+    HexBoard(unsigned int n, Player& p1, Player& p2)
+        : nodes(n * n, HexNode()),
+          grid_n(n),
+          turns(true),
+          redP(&p1),
+          blueP(&p2) {}
+
+    /// copy constructor
     HexBoard(const HexBoard& x)
-        : nodes(x.nodes), grid_(x.grid_), turns(x.turns), filled(x.filled) {}
+        : nodes(x.nodes), grid_n(x.grid_n), turns(x.turns), filled(x.filled) {}
     ~HexBoard() {}
     nodestatus get_node_status(unsigned int r, unsigned int c) {
         return nodes[index_of(r, c)].current;
     }
+
+    void registerRedPlayer(Player& p) { redP = &p; }
+
+    void registerBluePlayer(Player& p) { blueP = &p; }
 
     /// if node is still blank, then it's a valid move
     /// @pram r,c node position
@@ -193,26 +128,26 @@ public:
         switch (player) {
             case 1:  /// if player blue wins, that means no path from left to
                      /// right edge
-                for (unsigned int i = 0; i < grid_; ++i) {
+                for (unsigned int i = 0; i < grid_n; ++i) {
                     if (!check_is_blue(index_of(i, 0))) {
                         /// the start point can only be no blue hex
                         start_nodes.push_back(index_of(i, 0));
                     }
-                    if (!check_is_blue(index_of(i, grid_ - 1))) {
+                    if (!check_is_blue(index_of(i, grid_n - 1))) {
                         /// the end point must not be blue point
-                        end_nodes.insert(index_of(i, grid_ - 1));
+                        end_nodes.insert(index_of(i, grid_n - 1));
                     }
                 }
                 break;
 
             case 2:  /// if player red wins, that means no path from top to
                      /// bottom
-                for (unsigned int i = 0; i < grid_; ++i) {
+                for (unsigned int i = 0; i < grid_n; ++i) {
                     if (!check_is_red(index_of(0, i))) {
                         start_nodes.push_back(index_of(0, i));
                     }
-                    if (!check_is_red(index_of(grid_ - 1, i))) {
-                        end_nodes.insert(index_of(grid_ - 1, i));
+                    if (!check_is_red(index_of(grid_n - 1, i))) {
+                        end_nodes.insert(index_of(grid_n - 1, i));
                     }
                 }
                 break;
@@ -230,7 +165,7 @@ public:
         /// we can do this by having 7*2-1 = 13, and draw line when we have odd
         /// indexes
         bool even_row = true;
-        auto l = grid_ * 2 - 1;
+        auto l = grid_n * 2 - 1;
         for (int i = 0; i < l; ++i) {
             if (even_row) {
                 for (int j = 0; j < i; ++j) {
@@ -294,10 +229,10 @@ public:
 
     void start_game() {
         cout << "Game started. Press Ctrl+C if you want to quit game\n";
-        cout << "the grid is a " << grid_ << "x" << grid_ << " grid.\n";
+        cout << "the grid is a " << grid_n << "x" << grid_n << " grid.\n";
         cout << "The index starts from up left corner with index 0,0, and the "
                 "down right corner with index "
-             << grid_ - 1 << "," << grid_ - 1 << ".\n";
+             << grid_n - 1 << "," << grid_n - 1 << ".\n";
         cout << "You need to enter the index r c seperate with space to place "
                 "your hex on the grid\n";
 
@@ -307,17 +242,24 @@ public:
         while (!bluewin && !redwin) {
             if (turns) {
                 cout << "Now is Blue player's turn:\n";
+                current_p = blueP;
             } else {
                 cout << "Now is Red player's turn:\n";
+                current_p = redP;
             }
-            cin >> r >> c;
-            /// check if the input is valid, if it is not valid, player need to
-            /// reenter the next move
+            /// check if the input is valid, if it is not valid, player need
+            /// to re-enter the next move
+            auto p = current_p->play();
+            r = p.first;
+            c = p.second;
             while (!place_hex(r, c)) {
                 cout << "(" << r << "," << c
                      << ") is invalid, please re-enter:\n";
-                cin >> r >> c;
+                auto p = current_p->play();
+                r = p.first;
+                c = p.second;
             }
+
             turns = !turns;
             draw();
             bluewin = check_win(1);
@@ -330,41 +272,44 @@ public:
             cout << "RED\n!";
         }
     }
+    /// base data of Hexboard
+    vector<HexNode> nodes;
+    unsigned int grid_n;
+    bool turns;  /// Indicate the current turn player : true->Blue ; false->Red
 
 private:
-    vector<HexNode> nodes;
-    unsigned int grid_;
-    bool turns;  /// Indicate the current turn player : true->Blue ; false->Red
-    unsigned int filled;
+    Player* redP;
+    Player* blueP;
+    Player* current_p;
     unsigned int index_of(unsigned int r, unsigned int c) const {
-        if (r > grid_ || c > grid_) {
+        if (r > grid_n || c > grid_n) {
             throw invalid_argument("input out of bound.");
         };
-        return r * grid_ + c;
+        return r * grid_n + c;
     }
 
     /// given a node index, find all its neighbors
     vector<unsigned int> get_neighbors(unsigned int idx) const {
         /// 1-d index to actual r, c index
-        unsigned int r = idx / grid_;
-        unsigned int c = idx % grid_;
+        unsigned int r = idx / grid_n;
+        unsigned int c = idx % grid_n;
 
         vector<unsigned int> neis;
         /// six possible neighbor options
-        if (c + 1 < grid_) {
+        if (c + 1 < grid_n) {
             if (r > 0) {
                 neis.push_back(index_of(r - 1, c + 1));
             };
             neis.push_back(index_of(r, c + 1));
         };
-        if (r + 1 < grid_) {
+        if (r + 1 < grid_n) {
             neis.push_back(index_of(r + 1, c));
         };
         if (r > 0) {
             neis.push_back(index_of(r - 1, c));
         };
         if (c > 0) {
-            if (r + 1 < grid_) {
+            if (r + 1 < grid_n) {
                 neis.push_back(index_of(r + 1, c - 1));
             };
             neis.push_back(index_of(r, c - 1));
@@ -426,7 +371,82 @@ private:
     }
 };
 
+/// Define human player to take input from stdin
+class Human : public Player {
+public:
+    Human() : Player() {}
+    pair<int, int> play() {
+        int r, c;
+        cin >> r >> c;
+        return make_pair(r, c);
+    }
+};
+
+class MonteCarlo : public Player {
+public:
+    /// snapshot the state of current hexboard
+    MonteCarlo(int n) : simu(n) {}
+    /// Simulate the play using monte carlo
+    int simulate() {
+        /// Simulate the play
+        for (int i = 0; i < simu; ++i) {
+            /// play until the whole hexboard is filled
+            /// we can add a counter inside the hexboard to keep track on how
+            /// many moves have been made. We will randomly pick a number to
+            /// place hex. If it cannot fill, we will make another random move
+            /// until we fill all hexes.
+            auto ns = HexBoard(10);
+            while (ns.filled < ns.nodes.size()) {
+                auto nextmove = rand() % ns.nodes.size();
+                int r = nextmove / ns.grid_n, c = nextmove % ns.grid_n;
+                if (ns.check_blank(r, c)) {
+                    ns.place_hex(r, c);
+                }
+            }
+            /// Check if player blue wins. if not, then player red wins as hex
+            /// cannot be draw and will always have a winner.
+            /// check snapshot turns to determine which player should move and
+            /// that player's winning condition
+            bool win;
+            int player;
+            // if (snapshot.turns) {
+            //     player = 1;  /// blue player
+            // } else {
+            //     player = 2;  /// red player
+            // }
+            win = ns.check_win(player);
+            if (win) {
+                for (int i = 0; i < ns.nodes.size(); ++i) {
+                    if (ns.check_player(i) == player) {
+                        if (wincount.find(i) == wincount.end()) {
+                            wincount[i] = 1;
+                        } else {
+                            ++wincount[i];
+                        }
+                    }
+                }
+            } else {
+                for (int i = 0; i < ns.nodes.size(); ++i) {
+                    if (ns.check_player(i) == player) {
+                        if (wincount.find(i) == wincount.end()) {
+                            wincount[i] = -1;
+                        } else {
+                            --wincount[i];
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+private:
+    int simu;
+    unordered_map<int, int> wincount;
+};
+
 int main() {
-    HexBoard hb(7);
+    Human p1;
+    Human p2;
+    HexBoard hb(7, p1, p2);
     hb.start_game();
 }
