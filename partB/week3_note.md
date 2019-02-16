@@ -117,7 +117,7 @@ protected:
     Node(){use =1;}
     virtual void print(ostream&)=0; //pure virtual
     virtual ~Node(){}   // virtual destructor
-    virtual int eval() = 0;
+    virtual int eval() ;
 };
 ```
 
